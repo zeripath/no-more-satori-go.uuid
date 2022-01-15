@@ -1,4 +1,5 @@
 // Copyright (C) 2013-2018 by Maxim Bublis <b@codemonkey.ru>
+// Copyright (C) 2022 by Andrew Thornton <art27@cantab.net>
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the

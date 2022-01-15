@@ -1,4 +1,5 @@
 // Copyright (C) 2013-2018 by Maxim Bublis <b@codemonkey.ru>
+// Copyright (C) 2022 by Andrew Thornton <art27@cantab.net>
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,7 +27,8 @@ package uuid
 
 import (
 	"bytes"
-	"encoding/hex"
+
+	"github.com/google/uuid"
 )
 
 // Size of a UUID in bytes.
@@ -34,7 +36,8 @@ const Size = 16
 
 // UUID representation compliant with specification
 // described in RFC 4122.
-type UUID [Size]byte
+type UUID = uuid.UUID
+type NullUUID = uuid.NullUUID
 
 // UUID versions
 const (
@@ -61,12 +64,6 @@ const (
 	DomainOrg
 )
 
-// String parse helpers.
-var (
-	urnPrefix  = []byte("urn:uuid:")
-	byteGroups = []int{8, 4, 4, 4, 12}
-)
-
 // Nil is special form of UUID that is specified to have all
 // 128 bits set to zero.
 var Nil = UUID{}
@@ -82,71 +79,6 @@ var (
 // Equal returns true if u1 and u2 equals, otherwise returns false.
 func Equal(u1 UUID, u2 UUID) bool {
 	return bytes.Equal(u1[:], u2[:])
-}
-
-// Version returns algorithm version used to generate UUID.
-func (u UUID) Version() byte {
-	return u[6] >> 4
-}
-
-// Variant returns UUID layout variant.
-func (u UUID) Variant() byte {
-	switch {
-	case (u[8] >> 7) == 0x00:
-		return VariantNCS
-	case (u[8] >> 6) == 0x02:
-		return VariantRFC4122
-	case (u[8] >> 5) == 0x06:
-		return VariantMicrosoft
-	case (u[8] >> 5) == 0x07:
-		fallthrough
-	default:
-		return VariantFuture
-	}
-}
-
-// Bytes returns bytes slice representation of UUID.
-func (u UUID) Bytes() []byte {
-	return u[:]
-}
-
-// Returns canonical string representation of UUID:
-// xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
-func (u UUID) String() string {
-	buf := make([]byte, 36)
-
-	hex.Encode(buf[0:8], u[0:4])
-	buf[8] = '-'
-	hex.Encode(buf[9:13], u[4:6])
-	buf[13] = '-'
-	hex.Encode(buf[14:18], u[6:8])
-	buf[18] = '-'
-	hex.Encode(buf[19:23], u[8:10])
-	buf[23] = '-'
-	hex.Encode(buf[24:], u[10:])
-
-	return string(buf)
-}
-
-// SetVersion sets version bits.
-func (u *UUID) SetVersion(v byte) {
-	u[6] = (u[6] & 0x0f) | (v << 4)
-}
-
-// SetVariant sets variant bits.
-func (u *UUID) SetVariant(v byte) {
-	switch v {
-	case VariantNCS:
-		u[8] = (u[8]&(0xff>>1) | (0x00 << 7))
-	case VariantRFC4122:
-		u[8] = (u[8]&(0xff>>2) | (0x02 << 6))
-	case VariantMicrosoft:
-		u[8] = (u[8]&(0xff>>3) | (0x06 << 5))
-	case VariantFuture:
-		fallthrough
-	default:
-		u[8] = (u[8]&(0xff>>3) | (0x07 << 5))
-	}
 }
 
 // Must is a helper that wraps a call to a function returning (UUID, error)
